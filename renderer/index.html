@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sakura Memo - 管理面板</title>
+<style>
+  :root {
+    --sakura: #F472B6;
+    --sakura-dark: #BE185D;
+    --sakura-light: #FDF2F8;
+    --sakura-bg: #FEF1F5;
+    --glass-bg: rgba(255, 255, 255, 0.7);
+    --glass-border: rgba(244, 114, 182, 0.2);
+    --glass-blur: blur(24px);
+    --text-primary: #1a1a2e;
+    --text-secondary: #6b7280;
+    --text-tertiary: #9ca3af;
+    --radius: 16px;
+    --radius-sm: 10px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    width: 100%; height: 100%;
+    background: transparent;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+    overflow: hidden;
+    border-radius: var(--radius);
+  }
+
+  .app {
+    width: 100%; height: 100%;
+    background: var(--glass-bg);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .titlebar {
+    display: flex;
+    align-items: center;
+    padding: 10px 16px;
+    background: rgba(244, 114, 182, 0.06);
+    border-bottom: 1px solid var(--glass-border);
+    -webkit-app-region: drag;
+    gap: 12px;
+  }
+
+  .titlebar .logo {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--sakura);
+    -webkit-app-region: drag;
+  }
+
+  .titlebar .spacer { flex: 1; }
+
+  .titlebar .btn {
+    padding: 6px 14px;
+    border: 1px solid var(--sakura);
+    background: transparent;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 12px;
+    color: var(--sakura);
+    font-weight: 500;
+    -webkit-app-region: no-drag;
+    transition: all 0.2s;
+  }
+
+  .titlebar .btn:hover {
+    background: var(--sakura);
+    color: white;
+  }
+
+  .titlebar .btn-close {
+    width: 32px; height: 32px;
+    border: none;
+    background: transparent;
+    border-radius: 8px;
+    font-size: 16px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    -webkit-app-region: no-drag;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .titlebar .btn-close:hover { background: #ef4444; color: white; }
+
+  /* Search */
+  .search-bar {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--glass-border);
+  }
+
+  .search-input {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1px solid var(--glass-border);
+    border-radius: 10px;
+    font-size: 13px;
+    outline: none;
+    background: rgba(255, 255, 255, 0.5);
+    color: var(--text-primary);
+    transition: border-color 0.2s;
+  }
+
+  .search-input:focus {
+    border-color: var(--sakura);
+  }
+
+  .search-input::placeholder { color: var(--text-tertiary); }
+
+  /* Stats */
+  .stats {
+    display: flex;
+    gap: 12px;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--glass-border);
+  }
+
+  .stat-card {
+    flex: 1;
+    padding: 10px 14px;
+    background: var(--sakura-bg);
+    border-radius: var(--radius-sm);
+    text-align: center;
+  }
+
+  .stat-card .num {
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--sakura);
+  }
+
+  .stat-card .label {
+    font-size: 11px;
+    color: var(--text-secondary);
+    margin-top: 2px;
+  }
+
+  /* Note list */
+  .note-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 12px 16px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 10px;
+    align-content: start;
+  }
+
+  .note-card {
+    background: rgba(255, 255, 255, 0.5);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-sm);
+    padding: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-height: 100px;
+    position: relative;
+  }
+
+  .note-card:hover {
+    border-color: var(--sakura);
+    background: rgba(244, 114, 182, 0.04);
+    transform: translateY(-1px);
+  }
+
+  .note-card.pinned {
+    border-color: var(--sakura);
+    border-width: 1.5px;
+  }
+
+  .note-card .card-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .note-card .card-content {
+    font-size: 12px;
+    color: var(--text-secondary);
+    line-height: 1.5;
+    flex: 1;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+  }
+
+  .note-card .card-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 10px;
+    color: var(--text-tertiary);
+  }
+
+  .note-card .card-delete {
+    position: absolute;
+    top: 6px; right: 8px;
+    width: 22px; height: 22px;
+    border: none;
+    background: transparent;
+    border-radius: 6px;
+    font-size: 12px;
+    color: var(--text-tertiary);
+    cursor: pointer;
+    display: none;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .note-card:hover .card-delete { display: flex; }
+  .note-card .card-delete:hover { background: #fecaca; color: #ef4444; }
+
+  .note-list::-webkit-scrollbar { width: 4px; }
+  .note-list::-webkit-scrollbar-track { background: transparent; }
+  .note-list::-webkit-scrollbar-thumb { background: rgba(244, 114, 182, 0.15); border-radius: 2px; }
+
+  /* Empty state */
+  .empty {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text-tertiary);
+  }
+
+  .empty .icon { font-size: 40px; margin-bottom: 12px; }
+  .empty .text { font-size: 13px; }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="titlebar">
+    <span class="logo">Sakura Memo</span>
+    <div class="spacer"></div>
+    <button class="btn" id="btnNew">+ 新建便签</button>
+    <button class="btn-close" id="btnClose">✕</button>
+  </div>
+
+  <div class="search-bar">
+    <input class="search-input" id="searchInput" placeholder="搜索便签...">
+  </div>
+
+  <div class="stats" id="stats">
+    <div class="stat-card"><div class="num" id="statTotal">0</div><div class="label">全部便签</div></div>
+    <div class="stat-card"><div class="num" id="statPinned">0</div><div class="label">已置顶</div></div>
+    <div class="stat-card"><div class="num" id="statToday">0</div><div class="label">今日更新</div></div>
+  </div>
+
+  <div class="note-list" id="noteList">
+    <div class="empty">
+      <div class="icon">🌸</div>
+      <div class="text">还没有便签，点击上方按钮创建一个吧</div>
+    </div>
+  </div>
+</div>
+
+<script>
+let allNotes = [];
+
+async function loadNotes(query = "") {
+  let notes;
+  if (query) {
+    notes = await window.sakura.db.searchNotes(query);
+  } else {
+    notes = await window.sakura.db.getAllNotes();
+  }
+  allNotes = notes;
+  renderNotes(notes);
+  updateStats(notes);
+}
+
+function renderNotes(notes) {
+  const list = document.getElementById("noteList");
+  if (notes.length === 0) {
+    list.innerHTML = '<div class="empty"><div class="icon">🌸</div><div class="text">没有找到便签</div></div>';
+    return;
+  }
+
+  list.innerHTML = notes.map(n => `
+    <div class="note-card ${n.pinned ? 'pinned' : ''}" data-id="${n.id}">
+      <div class="card-title">${escapeHtml(n.title || '无标题')}</div>
+      <div class="card-content">${escapeHtml(n.content || '空内容')}</div>
+      <div class="card-meta">
+        <span>${formatDate(n.updated_at)}</span>
+        <span>${n.mode === 'mini' ? '迷你' : n.mode === 'expanded' ? '展开' : '标准'}</span>
+      </div>
+      <button class="card-delete" data-id="${n.id}">✕</button>
+    </div>
+  `).join("");
+
+  // Click to open note
+  list.querySelectorAll(".note-card").forEach(card => {
+    card.addEventListener("click", (e) => {
+      if (e.target.classList.contains("card-delete")) return;
+      const id = Number(card.dataset.id);
+      window.sakura.window.openNote(id);
+    });
+  });
+
+  // Delete button
+  list.querySelectorAll(".card-delete").forEach(btn => {
+    btn.addEventListener("click", async (e) => {
+      e.stopPropagation();
+      const id = Number(btn.dataset.id);
+      if (confirm("确定删除这条便签吗？")) {
+        await window.sakura.db.deleteNote(id);
+        loadNotes(document.getElementById("searchInput").value);
+      }
+    });
+  });
+}
+
+function updateStats(notes) {
+  const today = new Date().toISOString().split("T")[0];
+  document.getElementById("statTotal").textContent = notes.length;
+  document.getElementById("statPinned").textContent = notes.filter(n => n.pinned).length;
+  document.getElementById("statToday").textContent = notes.filter(n => n.updated_at && n.updated_at.startsWith(today)).length;
+}
+
+function formatDate(dateStr) {
+  if (!dateStr) return "";
+  try {
+    const d = new Date(dateStr.replace(" ", "T"));
+    const now = new Date();
+    const diff = now - d;
+    if (diff < 60000) return "刚刚";
+    if (diff < 3600000) return `${Math.floor(diff / 60000)}分钟前`;
+    if (diff < 86400000) return `${Math.floor(diff / 3600000)}小时前`;
+    if (diff < 604800000) return `${Math.floor(diff / 86400000)}天前`;
+    return dateStr.split(" ")[0];
+  } catch {
+    return dateStr;
+  }
+}
+
+function escapeHtml(str) {
+  const div = document.createElement("div");
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+// Search with debounce
+let searchTimer = null;
+document.getElementById("searchInput").addEventListener("input", (e) => {
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(() => loadNotes(e.target.value), 300);
+});
+
+// New note button
+document.getElementById("btnNew").addEventListener("click", async () => {
+  const id = await window.sakura.db.createNote({});
+  window.sakura.window.openNote(id);
+  loadNotes();
+});
+
+// Close button
+document.getElementById("btnClose").addEventListener("click", () => {
+  window.sakura.window.close();
+});
+
+// Load notes on start
+loadNotes();
+</script>
+</body>
+</html>
