@@ -137,6 +137,14 @@ const server = http.createServer(async (req, res) => {
     return serveStatic(res, path.join(__dirname, "assets", "icon.png"));
   }
 
+  // Generic assets
+  if (url.startsWith("/assets/")) {
+    const assetPath = path.join(__dirname, url);
+    if (fs.existsSync(assetPath)) {
+      return serveStatic(res, assetPath);
+    }
+  }
+
   res.writeHead(404);
   res.end("Not Found");
 });

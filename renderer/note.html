@@ -53,6 +53,8 @@
   }
   .btn:hover { background: rgba(244,114,182,0.1); color: var(--sakura); }
   .btn.active { background: var(--sakura); color: white; }
+  .btn img { width: 18px; height: 18px; opacity: 0.35; transition: all 0.2s; }
+  .btn.active img { opacity: 1; }
   .btn-close:hover { background: #fecaca; color: #ef4444; }
   .content {
     flex: 1; padding: 12px 14px;
@@ -73,7 +75,9 @@
 <div class="note">
   <div class="titlebar">
     <input class="title-input" id="titleInput" placeholder="无标题" maxlength="100">
-    <button class="btn" id="btnPin" title="置顶">📌</button>
+    <button class="btn" id="btnPin" title="收藏">
+      <img src="/assets/bookmark.png" alt="收藏">
+    </button>
     <button class="btn btn-close" id="btnClose" title="关闭">✕</button>
   </div>
   <div class="content">

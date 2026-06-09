@@ -112,6 +112,17 @@
     display: flex; justify-content: space-between;
     font-size: 10px; color: var(--text-tertiary);
   }
+  .note-card .card-star {
+    position: absolute; top: 6px; left: 8px;
+    width: 26px; height: 26px; border: none;
+    background: transparent; border-radius: 6px;
+    cursor: pointer; padding: 2px;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.15s;
+  }
+  .note-card .card-star:hover { background: rgba(244,114,182,0.1); }
+  .note-card .card-star img { width: 18px; height: 18px; opacity: 0.2; transition: all 0.2s; }
+  .note-card .card-star.pinned img { opacity: 1; }
   .note-card .card-delete {
     position: absolute; top: 8px; right: 10px;
     width: 24px; height: 24px; border: none;
@@ -144,7 +155,7 @@
   </div>
   <div class="stats">
     <div class="stat-card"><div class="num" id="statTotal">0</div><div class="label">全部</div></div>
-    <div class="stat-card"><div class="num" id="statPinned">0</div><div class="label">已置顶</div></div>
+    <div class="stat-card"><div class="num" id="statPinned">0</div><div class="label">已收藏</div></div>
     <div class="stat-card"><div class="num" id="statToday">0</div><div class="label">今日更新</div></div>
   </div>
   <div class="note-list" id="noteList">
@@ -170,6 +181,9 @@ function renderNotes(notes) {
   }
   list.innerHTML = notes.map(n => `
     <div class="note-card" data-id="${n.id}">
+      <button class="card-star${n.pinned ? ' pinned' : ''}" data-id="${n.id}" title="收藏">
+        <img src="/assets/bookmark.png" alt="收藏">
+      </button>
       <div class="card-title">${esc(n.title || '无标题')}</div>
       <div class="card-content">${esc(n.content || '空内容')}</div>
       <div class="card-meta">
@@ -181,8 +195,21 @@ function renderNotes(notes) {
 
   list.querySelectorAll(".note-card").forEach(card => {
     card.addEventListener("click", (e) => {
-      if (e.target.classList.contains("card-delete")) return;
+      if (e.target.closest(".card-delete") || e.target.closest(".card-star")) return;
       sakura.openNote(Number(card.dataset.id));
+    });
+  });
+  list.querySelectorAll(".card-star").forEach(btn => {
+    btn.addEventListener("click", async (e) => {
+      e.stopPropagation();
+      const id = Number(btn.dataset.id);
+      const note = allNotes.find(n => n.id === id);
+      if (!note) return;
+      const newPinned = note.pinned ? 0 : 1;
+      await sakura.updateNote(id, { pinned: newPinned });
+      note.pinned = newPinned;
+      btn.classList.toggle("pinned", newPinned);
+      updateStats(allNotes);
     });
   });
   list.querySelectorAll(".card-delete").forEach(btn => {
