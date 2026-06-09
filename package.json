@@ -10,8 +10,7 @@
   "author": "jiexiongLeslie",
   "license": "MIT",
   "dependencies": {
-    "better-sqlite3": "^12.10.0",
-    "electron": "^42.3.3",
-    "electron-rebuild": "^3.2.9"
+    "electron": "^28.3.3",
+    "sql.js": "^1.14.1"
   }
 }
