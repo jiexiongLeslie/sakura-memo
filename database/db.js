@@ -8,6 +8,11 @@ let dbPath = null;
 async function initDB(userDataPath) {
   if (db) return db;
 
+  // Ensure directory exists
+  if (!fs.existsSync(userDataPath)) {
+    fs.mkdirSync(userDataPath, { recursive: true });
+  }
+
   const initSqlJs = require("sql.js");
   SQL = await initSqlJs();
 

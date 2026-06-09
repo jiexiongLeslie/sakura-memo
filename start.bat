@@ -1,3 +1,10 @@
 @echo off
-set NODE_OPTIONS=
-"C:\Users\Administrator\WorkBuddy\2026-06-08-17-55-17\sakura-memo\node_modules\electron\dist\electron.exe" "C:\Users\Administrator\WorkBuddy\2026-06-08-17-55-17\sakura-memo"
+cd /d "%~dp0"
+echo.
+echo   =====================================
+echo     Sakura Memo
+echo     http://localhost:27149
+echo   =====================================
+echo.
+"C:\Users\Administrator\.workbuddy\binaries\node\versions\22.22.2\node.exe" server.js
+pause
